@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4a8b2c">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecozen Smart Solar Calculator</title>
+
+  <script>if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+    </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    
+
+    
+    
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #f0f4f8;
+      color: #333;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-top: 6px solid #4a8b2c;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .logo-img {
+      max-width: 210px;
+      height: auto;
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    .subtitle {
+      font-size: 0.9em;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.9em;
+      display: block;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.95em;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #4a8b2c;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(74, 139, 44, 0.1);
+    }
+
+    .inline-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .inline-row .input-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .suggestion-box {
+      background: #ecfccb;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #bef264;
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .suggestion-text {
+      color: #3f6212;
+      font-size: 0.9em;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .suggestion-val {
+      color: #1a2e05;
+      font-size: 1.4em;
+      font-weight: 800;
+    }
+
+    .suggestion-sub {
+      color: #3f6212;
+      font-size: 0.8em;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .step-container {
+      display: none;
+    }
+
+    .step-active {
+      display: block;
+    }
+
+    .btn-next {
+      width: 100%;
+      padding: 14px;
+      background: #4a8b2c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-next:hover {
+      background: #3b7022;
+    }
+
+    .section-title {
+      font-weight: 800;
+      margin: 14px 0 10px;
+      color: #111827;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: #f9fafb;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .card-title {
+      font-size: 0.8em;
+      color: #6b7280;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .card-value {
+      font-size: 1.05em;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .highlight-card {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 1px solid #bbf7d0;
+    }
+
+    .highlight-card .card-value {
+      color: #15803d;
+    }
+
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 0;
+      font-size: 0.85em;
+      color: #4b5563;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .cost-row:last-child {
+      border-bottom: none;
+    }
+
+    .cost-val {
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .graph-wrap {
+      margin-top: 14px;
+      padding: 14px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .graph-title {
+      font-weight: 800;
+      color: #111827;
+      font-size: 0.95em;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .bars {
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      height: 140px;
+      padding: 8px;
+      background: linear-gradient(to bottom, white, #f8fafc);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .bar {
+      flex: 1;
+      position: relative;
+      border-radius: 8px 8px 6px 6px;
+      transition: height 0.5s ease;
+    }
+
+    .bar-label {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -32px;
+      font-size: 10px;
+      color: #4b5563;
+      width: 100%;
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .bar-val {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: -24px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #111827;
+      white-space: nowrap;
+      background: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .bar-bill {
+      background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .bar-emi {
+      background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+    }
+
+    .bar-net {
+      background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .bar-net.neg {
+      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+    }
+
+    .brand-footer {
+      text-align: center;
+      margin-top: 26px;
+      font-size: 0.8em;
+      color: #9ca3af;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .note {
+      font-size: 0.75em;
+      color: #64748b;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    .units-preview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 0.85em;
+    }
+
+    .unit-card {
+      text-align: center;
+      padding: 8px;
+      background: #f0fdf4;
+      border-radius: 6px;
+      border: 1px solid #bbf7d0;
+    }
+
+    .unit-value {
+      font-weight: 700;
+      color: #166534;
+      font-size: 1.1em;
+    }
+
+    .unit-label {
+      color: #4b5563;
+      font-size: 0.75em;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="image.jpg" alt="Ecozen Logo" class="logo-img">
+      <div class="subtitle">Smart Solar Calculator</div>
+
+    </div>
+
+    <div id="step1" class="step-container step-active">
+      <div class="input-group">
+        <label>Bill Type</label>
+        <select id="bill_type" onchange="toggleInputs()">
+          <option value="flat">Standard Monthly Average</option>
+          <option value="seasonal">Seasonal (Summer/Winter)</option>
+        </select>
+      </div>
+
+      <div id="standard_input" class="input-group">
+        <label>Monthly Bill (₹)</label>
+        <input type="number" id="bill_flat" placeholder="4500" oninput="checkBill()">
+      </div>
+
+      <div id="seasonal_input" class="input-group hidden">
+        <div class="inline-row">
+          <div class="input-group">
+            <label>Summer Bill (₹)</label>
+            <input type="number" id="bill_summer" placeholder="5000" oninput="checkBill()">
+          </div>
+          <div class="input-group">
+            <label>Summer Months</label>
+            <input type="number" id="months_summer" value="6" min="1" max="12" oninput="checkBill()">
+          </div>
+        </div>
+        <div class="inline-row" style="margin-top:8px;">
+          <div class="input-group">
+            <label>Winter Bill (₹)</label>
+            <input type="number" id="bill_winter" placeholder="2000" oninput="checkBill()">
+          </div>
+          <div class="input-group">
+            <label>Winter Months</label>
+            <input type="number" id="months_winter" value="6" min="1" max="12" oninput="checkBill()">
+          </div>
+        </div>
+        <div class="note">Customise summer/winter months (e.g. 4 & 8)</div>
+      </div>
+
+      <div class="input-group">
+        <label>Tariff (₹/unit)</label>
+        <input type="number" id="tariff" value="8" oninput="checkBill()">
+      </div>
+
+      <div id="suggestion_box" class="suggestion-box">
+        <div class="suggestion-text">Recommended System Size</div>
+        <div class="suggestion-val" id="suggested_kw_display">-- kW</div>
+        <div class="units-preview">
+          <div class="unit-card">
+            <div class="unit-value" id="monthly_units_preview">--</div>
+            <div class="unit-label">Monthly Units</div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-value" id="yearly_units_preview">--</div>
+            <div class="unit-label">Yearly Units</div>
+          </div>
+        </div>
+        <div class="suggestion-sub" id="suggestion_sub"></div>
+      </div>
+
+      <button class="btn-next" onclick="goToStep2()">Next: System Details</button>
+      <div class="note">1 kW generates ~120 units/month</div>
+    </div>
+
+    <div id="step2" class="step-container">
+      <div class="input-group">
+        <label>Brand</label>
+        <select id="brand" onchange="autoDownPayment()">
+          <option value="Adani">Adani</option>
+          <option value="Tata">Tata</option>
+          <option value="Premier">Premier</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>System Size (kW)</label>
+        <select id="size" onchange="autoDownPayment()">
+          <option value="3">3 kW</option>
+          <option value="4">4 kW</option>
+          <option value="5">5 kW</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Down Payment (₹)</label>
+        <input type="number" id="down_payment" value="0" oninput="updateDownPaymentPercent()">
+        <div class="note" id="dp_percent_note">Down payment: 0% (auto 10% of FULL system price)</div>
+      </div>
+
+      <div class="input-group">
+        <label>Interest Rate (%)</label>
+        <input type="number" id="interest_rate" value="7" step="0.1">
+      </div>
+
+      <div class="input-group">
+        <label>Loan Tenure WITHOUT Subsidy (Years)</label>
+        <input type="number" id="loan_tenure" value="5" step="0.5" min="1" max="10">
+      </div>
+
+      <button class="btn-next" onclick="calculate()">Show Report</button>
+      <button onclick="goToStep1()"
+        style="background:none; color:#666; width:100%; border:none; margin-top:8px; cursor:pointer;">← Back</button>
+    </div>
+
+    <div id="step3" class="step-container">
+      <div class="section-title">Your Solar System</div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">System Size</div>
+          <div class="card-value" id="final_size"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Roof Area</div>
+          <div class="card-value" id="final_roof"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Savings & Returns</div>
+      <div class="card-grid">
+        <div class="card highlight-card">
+          <div class="card-title">Monthly Saving</div>
+          <div class="card-value" id="final_monthly_save"></div>
+        </div>
+        <div class="card highlight-card">
+          <div class="card-title">Yearly Saving</div>
+          <div class="card-value" id="final_yearly_save"></div>
+        </div>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">Payback Period</div>
+          <div class="card-value" id="final_payback"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">ROI (Year 1)</div>
+          <div class="card-value" id="final_roi"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Finance (Fixed EMI)</div>
+      <div
+        style="background:#f8fafc; padding:12px 14px; border-radius:12px; margin-bottom:14px; border:1px solid #e2e8f0;">
+        <div class="cost-row"><span>System Cost</span><span class="cost-val" id="cost_gross"></span></div>
+        <div class="cost-row"><span>Central Subsidy</span><span class="cost-val" id="central_sub"
+            style="color:#16a34a;"></span></div>
+        <div class="cost-row"><span>State Subsidy</span><span class="cost-val" id="state_sub"
+            style="color:#16a34a;"></span></div>
+        <div class="cost-row"><span>Down Payment</span><span class="cost-val" id="dp_val" style="color:#16a34a;"></span>
+        </div>
+        <div class="cost-row"><span style="font-weight:800; color:#0369a1;">Monthly EMI</span><span class="cost-val"
+            id="emi_val" style="color:#0369a1; font-size:1.05em;"></span></div>
+        <div class="cost-row"><span>Tenure WITHOUT Subsidy</span><span class="cost-val" id="tenure_no_sub"></span></div>
+        <div class="cost-row"><span style="font-weight:600; color:#059669;">Tenure WITH Subsidy</span><span
+            class="cost-val" id="tenure_with_sub" style="color:#059669;"></span></div>
+      </div>
+
+      <div class="graph-wrap">
+        <div class="graph-title">Monthly Cash Flow</div>
+        <div class="bars">
+          <div class="bar bar-bill" id="bar_bill" style="height:10px;">
+            <div class="bar-val" id="bar_bill_val">₹0</div>
+            <div class="bar-label">Current<br>Bill</div>
+          </div>
+          <div class="bar bar-emi" id="bar_emi" style="height:10px;">
+            <div class="bar-val" id="bar_emi_val">₹0</div>
+            <div class="bar-label">Solar<br>EMI</div>
+          </div>
+          <div class="bar bar-net" id="bar_net" style="height:10px;">
+            <div class="bar-val" id="bar_net_val">₹0</div>
+            <div class="bar-label">Net<br>Benefit</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="goToStep2()"
+        style="background:#e5e7eb; color:#333; width:100%; border:none; padding:10px; border-radius:8px; margin-top:10px; cursor:pointer;">Edit
+        Details</button>
+    </div>
+
+    <div class="brand-footer">© Ecozen Solutions</div>
+  </div>
+
+  <script>
+    const prices = { "Tata": { "3": 188000, "4": 0, "5": 0 }, "Adani": { "3": 183000, "4": 238000, "5": 281000 }, "Premier": { "3": 173000, "4": 224000, "5": 264000 } };
+    const roof_req = { "3": "150-200 sq.ft.", "4": "250-300 sq.ft.", "5": "350-400 sq.ft." };
+    const CENTRAL_SUBSIDY = 78000;
+    const STATE_SUBSIDY = 30000;
+
+    function goToStep2() {
+      document.getElementById('step1').classList.remove('step-active');
+      document.getElementById('step2').classList.add('step-active');
+      document.getElementById('step3').classList.remove('step-active');
+    }
+    function goToStep1() {
+      document.getElementById('step2').classList.remove('step-active');
+      document.getElementById('step1').classList.add('step-active');
+    }
+
+    function toggleInputs() {
+      const type = document.getElementById('bill_type').value;
+      document.getElementById('standard_input').classList.toggle('hidden', type === 'seasonal');
+      document.getElementById('seasonal_input').classList.toggle('hidden', type !== 'seasonal');
+      checkBill();
+    }
+
+    function getMonthlyBillAvg() {
+      const tariff = parseFloat(document.getElementById('tariff').value) || 8;
+      const type = document.getElementById('bill_type').value;
+      let annual_bill = 0;
+      if (type === 'seasonal') {
+        annual_bill = ((parseFloat(document.getElementById('bill_summer').value) || 0) * (parseFloat(document.getElementById('months_summer').value) || 0)) +
+          ((parseFloat(document.getElementById('bill_winter').value) || 0) * (parseFloat(document.getElementById('months_winter').value) || 0));
+      } else {
+        annual_bill = (parseFloat(document.getElementById('bill_flat').value) || 0) * 12;
+      }
+      return { monthly_bill: annual_bill / 12, tariff };
+    }
+
+    function getCurrentCost() {
+      const brand = document.getElementById('brand').value;
+      const size = document.getElementById('size').value;
+      return prices[brand] && prices[brand][size] ? prices[brand][size] : 0;
+    }
+
+    function autoDownPayment() {
+      const cost = getCurrentCost();
+      // FIXED: 10% of FULL system price (NO subsidy deduction)
+      if (cost > 0) {
+        document.getElementById('down_payment').value = Math.round(cost * 0.10);
+        updateDownPaymentPercent();
+      }
+    }
+
+    function updateDownPaymentPercent() {
+      const cost = getCurrentCost();
+      const dp = parseFloat(document.getElementById('down_payment').value) || 0;
+      const pct = cost > 0 ? (dp / cost) * 100 : 0;
+      document.getElementById('dp_percent_note').textContent = `Down payment: ${pct.toFixed(1)}% of full system price`;
+    }
+
+    function solveTenureFromEMI(P, EMI, annualRate) {
+      const r = annualRate / 12 / 100;
+      if (EMI <= 0 || P <= 0 || r === 0) return P / EMI;
+      const denom = EMI - P * r;
+      return denom <= 0 ? 999 : Math.log(EMI / denom) / Math.log(1 + r);
+    }
+
+    function checkBill() {
+      const { monthly_bill, tariff } = getMonthlyBillAvg();
+      const box = document.getElementById('suggestion_box');
+      if (monthly_bill > 0 && tariff > 0) {
+        const units_monthly = monthly_bill / tariff;
+        const units_yearly = units_monthly * 12;
+        const kw = units_monthly / 120;
+
+        document.getElementById('suggested_kw_display').textContent = kw.toFixed(2) + ' kW';
+        document.getElementById('monthly_units_preview').textContent = units_monthly.toFixed(0);
+        document.getElementById('yearly_units_preview').textContent = units_yearly.toFixed(0);
+        document.getElementById('suggestion_sub').textContent = `Bill: ₹${monthly_bill.toFixed(0)}, Units: ${units_monthly.toFixed(0)}. 1kW=120 units`;
+
+        const size = kw > 4 ? 5 : kw > 3 ? 4 : 3;
+        document.getElementById('size').value = size;
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function calculate() {
+      const { monthly_bill, tariff } = getMonthlyBillAvg();
+      const brand = document.getElementById('brand').value;
+      const size = parseInt(document.getElementById('size').value);
+      const down_payment = parseFloat(document.getElementById('down_payment').value) || 0;
+      const interest_rate = parseFloat(document.getElementById('interest_rate').value) || 0;
+      const tenure_years = parseFloat(document.getElementById('loan_tenure').value) || 0;
+
+      if (tenure_years < 1 || tenure_years > 10) return alert('Tenure 1-10 years');
+      const cost = prices[brand]?.[size];
+      if (!cost) return alert('Price unavailable');
+
+      const loan_no_sub = Math.max(0, cost - down_payment);
+      const r = interest_rate / 12 / 100;
+      const n = Math.max(1, Math.round(tenure_years * 12));
+      let emi = loan_no_sub > 0 && r > 0 ? (loan_no_sub * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : loan_no_sub / n;
+
+      const net_cost = cost - CENTRAL_SUBSIDY - STATE_SUBSIDY;
+      const loan_with_sub = Math.max(0, net_cost - down_payment);
+      const tenure_with_sub_months = loan_with_sub > 0 ? solveTenureFromEMI(loan_with_sub, emi, interest_rate) : 0;
+      const tenure_with_sub_years = tenure_with_sub_months / 12;
+
+      const units_monthly = monthly_bill / tariff;
+      const solar_units = size * 120;
+      const monthly_saving = Math.min(monthly_bill, solar_units * tariff);
+      const yearly_saving = monthly_saving * 12;
+      const net_benefit = monthly_saving - emi;
+      const payback = yearly_saving > 0 ? net_cost / yearly_saving : 0;
+      const roi = net_cost > 0 ? (yearly_saving / net_cost) * 100 : 0;
+
+      document.getElementById('final_size').textContent = size + ' kW';
+      document.getElementById('final_roof').textContent = roof_req[size] || size * 100 + ' sq.ft.';
+      document.getElementById('final_monthly_save').textContent = '₹' + monthly_saving.toFixed(0).toLocaleString('en-IN');
+      document.getElementById('final_yearly_save').textContent = '₹' + yearly_saving.toFixed(0).toLocaleString('en-IN');
+      document.getElementById('final_payback').textContent = payback.toFixed(1) + ' Years';
+      document.getElementById('final_roi').textContent = roi.toFixed(1) + '%';
+
+      document.getElementById('cost_gross').textContent = '₹' + cost.toLocaleString('en-IN');
+      document.getElementById('central_sub').textContent = '-₹' + CENTRAL_SUBSIDY.toLocaleString('en-IN');
+      document.getElementById('state_sub').textContent = '-₹' + STATE_SUBSIDY.toLocaleString('en-IN');
+      document.getElementById('dp_val').textContent = '-₹' + down_payment.toLocaleString('en-IN');
+      document.getElementById('emi_val').textContent = '₹' + emi.toFixed(0).toLocaleString('en-IN');
+      document.getElementById('tenure_no_sub').textContent = tenure_years.toFixed(1) + ' Years';
+      document.getElementById('tenure_with_sub').textContent = tenure_with_sub_years.toFixed(1) + ' Years';
+
+      const maxVal = Math.max(monthly_bill, emi, Math.abs(net_benefit), 1);
+      const h = 115;
+      document.getElementById('bar_bill').style.height = Math.max(10, (monthly_bill / maxVal) * h) + 'px';
+      document.getElementById('bar_emi').style.height = Math.max(10, (emi / maxVal) * h) + 'px';
+      document.getElementById('bar_net').style.height = Math.max(10, (Math.abs(net_benefit) / maxVal) * h) + 'px';
+      document.getElementById('bar_bill_val').textContent = '₹' + monthly_bill.toFixed(0);
+      document.getElementById('bar_emi_val').textContent = '₹' + emi.toFixed(0);
+      document.getElementById('bar_net_val').textContent = (net_benefit >= 0 ? '+₹' : '-₹') + Math.abs(net_benefit).toFixed(0);
+      document.getElementById('bar_net').className = 'bar bar-net' + (net_benefit < 0 ? ' neg' : '');
+
+      document.getElementById('step2').classList.remove('step-active');
+      document.getElementById('step3').classList.add('step-active');
+    }
+  </script>
+</body>
+
+</html>
